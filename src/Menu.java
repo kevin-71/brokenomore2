@@ -596,4 +596,4 @@ public class Menu {
             int dollarSignIndex = moneyString.length() - 1; // get index of "$" character
             moneyString = moneyString.substring(0, dollarSignIndex);
             moneyString = moneyString.replace(",", "."); // replace , by .
- */
+ */ 
