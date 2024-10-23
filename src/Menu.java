@@ -13,7 +13,7 @@ import static java.lang.Math.round;
 
 public class Menu {
 
-    public String writingPolice = "Times New Roman";  // set global variables from writing police as well as window size
+    public String writingPolice = "Garamond";  // set global variables from writing police as well as window size
     int windowX = 700;
     int windowY = 350;
 
@@ -41,6 +41,12 @@ public class Menu {
 
     double actualMoney = db.getMoney();
     JButton moneyButton; // button for user money amount
+    JTextField currentBudget; //
+
+    // colors
+    Color beigeParchemin = new Color(245,222,175); // name of the color
+    Color colorBrown = new Color(205,133,63);
+
 
     public Menu() throws SQLException {
         //set up frame
@@ -57,20 +63,20 @@ public class Menu {
         JPanel toolWindow = toolWindow();
         JPanel moneyWindow = moneyWindow();
         JPanel converterWindow = converterWindow();
-        JPanel manageMoneyWindow = manageMoneyWindow();
         //JPanel monthlyReportWindow = monthlyReportWindow();
         JPanel actionsWindow = actionsWindow();
         JPanel historyWindow = historyWindow();
         JPanel limitWindow = limitWindow();
+        JPanel budgetWindow = budgetWindow();
 
         panel.add(menuLauncher, "MenuLauncher");
         panel.add(toolWindow, "ToolWindow");
         panel.add(moneyWindow, "MoneyWindow");
         panel.add(converterWindow, "ConverterWindow");
-        panel.add(manageMoneyWindow, "manageMoneyWindow");
         panel.add(actionsWindow, "actionsWindow");
         panel.add(historyWindow, "historyWindow");
         panel.add(limitWindow, "limitWindow");
+        panel.add(budgetWindow, "budgetWindow");
         frame.add(panel);
 
         frame.setVisible(true);
@@ -90,7 +96,14 @@ public class Menu {
 
         moneyButton = new JButton(this.userMoney + "$"); // label where the amount of money is displayed "button" because we need to click on it
         moneyButton.setFont(new Font(writingPolice, Font.PLAIN, 50));
-        moneyButton.setBackground(Color.GREEN); // set color
+        moneyButton.setBackground(new Color(255, 239, 213)); // set color
+
+        if (db.getMoney() < 0){
+            moneyButton.setBorder(BorderFactory.createLineBorder(Color.RED, 5, true));
+        }
+        else{
+            moneyButton.setBorder(BorderFactory.createLineBorder(Color.BLACK, 1, true));
+        }
 
         JPanel panelBalance = new JPanel(); // making a panel where we will put all the components
         panelBalance.setLayout(new BoxLayout(panelBalance, BoxLayout.Y_AXIS));
@@ -107,12 +120,12 @@ public class Menu {
         // button tools
         JButton buttonTool = new JButton("Tools");
         buttonTool.setFont(new Font(writingPolice, Font.BOLD, 30));
-        buttonTool.setBackground(Color.ORANGE);
+        buttonTool.setBackground(new Color(245,222,175)); // button tool on main window
 
         // close button
         JButton buttonClose = new JButton("Close");
         buttonClose.setFont(new Font(writingPolice, Font.BOLD, 30));
-        buttonClose.setBackground(Color.RED);
+        buttonClose.setBackground(colorBrown); // button close main
 
         JPanel panelButtons = new JPanel(new GridLayout(1, 2, 10, 0)); // grid layout for displaying the two buttons at the bottom of the panel
         panelButtons.add(buttonTool);
@@ -140,7 +153,6 @@ public class Menu {
             frame.dispose();
             System.exit(0); // stop the Java program from running
         });
-
         return menuLauncher;
     }
 
@@ -148,12 +160,13 @@ public class Menu {
     public JPanel toolWindow() {
         JPanel toolWindow = new JPanel();
         //("BrokeNoMore Tools");
-
-        GridLayout grid = new GridLayout(3, 3, 10, 10); // grid layout for all the buttons that represents the functionalities
+        int nbRows = 2;
+        int nbCols = 3;
+        GridLayout grid = new GridLayout(nbRows, nbCols, 10, 10); // grid layout for all the buttons that represents the functionalities
         toolWindow.setLayout(grid);
 
-        String[] buttonNames = {"Converter", "Set Limit", "Actions", "History", "e", "d", "d", "r", "Return to menu"}; // all the names of the buttons
-        Color[] colors = {Color.GREEN, Color.YELLOW, Color.GRAY, Color.ORANGE, Color.PINK, Color.CYAN, Color.GRAY, Color.ORANGE, Color.RED}; // all the colors of the buttons, same order as the name of the buttons
+        String[] buttonNames = {"Converter", "Set Limit", "Actions", "History", "Budget Planner", "Return to menu"}; // all the names of the buttons
+        Color[] colors = {beigeParchemin, beigeParchemin, beigeParchemin, beigeParchemin, beigeParchemin, colorBrown}; // all the colors of the buttons, same order as the name of the buttons
         // list of actions listener to every single buttons
         ActionListener[] eventListeners = {
                 e -> {
@@ -177,19 +190,22 @@ public class Menu {
                     }
                 },
 
-                e -> System.out.println("Button e clicked"),
-                e -> System.out.println("Button d clicked"),
-                e -> System.out.println("Button d clicked"),
-                e -> System.out.println("Button r clicked"),
+                e -> {cardLayout.show(panel, "budgetWindow");
+                    try {
+                        currentBudget.setText(String.format("%.2f", db.getMoneyBudget())); // update of the budget
+                    } catch (SQLException ex) {
+                        errorMessage("Failed to load current budget.");
+                    }},
 
                 e -> {cardLayout.show(panel, "MenuLauncher");}
         };
 
-        for (int i = 1; i <= 9; i++) {
+        for (int i = 1; i <= nbRows*nbCols; i++) {
             JButton button = new JButton(buttonNames[i-1]); // assign name to every buttons on our list
             button.setFont(new Font(writingPolice, Font.BOLD, 20)); // assigning the same font for every buttons
             button.setBackground(colors[i-1]); // assigning to each button its color
             toolWindow.add(button); // add the button one by one to the panel
+            button.setBorder(BorderFactory.createLineBorder(Color.black, 2, true));
 
             button.addActionListener(eventListeners[i-1]); // put the corresponding action listener to every button, one by one, in the ordre
         }
@@ -230,7 +246,7 @@ public class Menu {
 
         JButton buttonReturn = new JButton("Return to Menu");
         buttonReturn.setFont(new Font(writingPolice, Font.BOLD, 30));
-        buttonReturn.setBackground(Color.RED);
+        buttonReturn.setBackground(colorBrown);
 
         titlePanel.setVisible(true);
         moneyWindow.add(titlePanel, BorderLayout.NORTH);
@@ -282,11 +298,11 @@ public class Menu {
         // setting up two buttons, same code pattern for these two button at the bottom as the menuLauncher() function
         JButton buttonConvert = new JButton("Convert");
         buttonConvert.setFont(new Font(writingPolice, Font.BOLD, 30));
-        buttonConvert.setBackground(Color.GREEN);
+        buttonConvert.setBackground(beigeParchemin);
 
         JButton buttonReturn = new JButton("Return to tools");
         buttonReturn.setFont(new Font(writingPolice, Font.BOLD, 30));
-        buttonReturn.setBackground(Color.RED);
+        buttonReturn.setBackground(colorBrown);
 
         buttonReturn.setBounds(400, 250, 250, 50);
         buttonConvert.setBounds(50, 250, 250, 50);
@@ -333,89 +349,6 @@ public class Menu {
         return converterWindow;
     }
 
-    public JPanel manageMoneyWindow() throws SQLException{
-        /*
-         ************** FUNCTION NEED TO BE DELETED ****************************************************************
-         */
-        JPanel moneyWindow = new JPanel(new BorderLayout());
-
-        // adding some buttons with the same logic as previously
-        JButton buttonAddMoney = new JButton("Add Money");
-        buttonAddMoney.setFont(new Font(writingPolice, Font.BOLD, 30));
-        buttonAddMoney.setBackground(new Color(0, 255, 0)); // color green
-
-        JButton buttonRemoveMoney = new JButton("Remove Money");
-        buttonRemoveMoney.setFont(new Font(writingPolice, Font.BOLD, 30));
-        buttonRemoveMoney.setBackground(Color.ORANGE);
-
-        JButton buttonReturn = new JButton("Return to Tools");
-        buttonReturn.setFont(new Font(writingPolice, Font.BOLD, 30));
-        buttonReturn.setBackground(Color.RED);
-
-        JPanel panelButtons = new JPanel(new GridLayout(1, 2, 10, 0));
-        panelButtons.add(buttonAddMoney);
-        panelButtons.add(buttonRemoveMoney);
-        panelButtons.add(buttonReturn);
-
-        //buttonReturn.setSize(250, 100);
-        //buttonAddMoney.setSize(250, 100);
-
-        panelButtons.setBorder(new EmptyBorder(20, 30, 20, 30));
-        moneyWindow.add(panelButtons, BorderLayout.SOUTH);
-
-        JTextArea amountMoneyArea = new JTextArea();
-        amountMoneyArea.setBorder(BorderFactory.createLineBorder(Color.BLACK, 5, true));
-        amountMoneyArea.setFont(new Font(writingPolice, Font.BOLD, 30));
-        moneyWindow.add(amountMoneyArea, BorderLayout.CENTER);
-
-        buttonReturn.addActionListener(e -> {
-            cardLayout.show(panel, "ToolWindow");
-        });
-
-        buttonRemoveMoney.addActionListener(e -> {
-            if (amountMoneyArea.getText().isEmpty()){
-                errorMessage("Please specify the amount you want to remove !");
-                return;
-            }
-            else if (Double.parseDouble(amountMoneyArea.getText()) < 0){
-                errorMessage("Please enter a positive number !");
-                return;
-            }
-            else if (actualMoney < Double.parseDouble(amountMoneyArea.getText())){
-                errorMessage("You don't have enough money !");
-                return;
-            }
-
-            DB db = new DB();
-            try {
-                db.addMoney(-Double.parseDouble(amountMoneyArea.getText()));
-                reloadMoney();
-            } catch (SQLException ex) {
-                throw new RuntimeException(ex);
-            }
-        });
-
-        buttonAddMoney.addActionListener(e -> {
-            if (amountMoneyArea.getText().isEmpty()){
-                errorMessage("Please specify the amount you want to add !");
-                return;
-            }
-            else if (Double.parseDouble(amountMoneyArea.getText()) < 0){
-                errorMessage("Please enter a positive number !");
-                return;
-            }
-
-            DB db = new DB();
-            try {
-                db.addMoney(Double.parseDouble(amountMoneyArea.getText()));
-                reloadMoney();
-            } catch (SQLException ex) {
-                throw new RuntimeException(ex);
-            }
-        });
-
-        return moneyWindow;
-    }
 
     public JPanel actionsWindow() throws SQLException {
         JPanel actionsWindow = new JPanel(new BorderLayout(20,20));
@@ -423,11 +356,11 @@ public class Menu {
         // adding buttons with the same logic as previously
         JButton buttonLog = new JButton("Log Action");
         buttonLog.setFont(new Font(writingPolice, Font.BOLD, 30));
-        buttonLog.setBackground(new Color(0, 255, 0)); // green
+        buttonLog.setBackground(beigeParchemin); // green
 
         JButton buttonReturn = new JButton("Return to Tools");
         buttonReturn.setFont(new Font(writingPolice, Font.BOLD, 30));
-        buttonReturn.setBackground(Color.RED);
+        buttonReturn.setBackground(colorBrown);
 
         JPanel panelButtons = new JPanel(new GridLayout(1, 2, 10, 0));
         panelButtons.add(buttonLog);
@@ -457,6 +390,8 @@ public class Menu {
         panelActions.add(transactionNotesArea);
         panelActions.add(new JLabel("Transaction Type:"));
         panelActions.add(typeBox);
+
+        panelButtons.setFont(new Font(writingPolice, Font.BOLD, 30));
 
         actionsWindow.add(panelActions, BorderLayout.CENTER);
 
@@ -497,9 +432,57 @@ public class Menu {
                 return;
             }
 
+            //check budget
+            String userAnswer = "hello world"; //to take teh decision of the user, to withdraw or not if it exceeds budget
             try{
-                if (Objects.equals(type, "Withdraw") && transactionAmount > db.getMoney()){ // check if the user want to withdraw more money than ha actually has
-                    errorMessage("You can't withdraw this amount as you don't have enough money !");
+                if (Objects.equals(type, "Withdraw") && transactionAmount > db.getMoneyBudget()){ // check if the user want to withdraw more money than he actually wants as he has set a budget
+
+                    //warn the user if it exceeds the budget
+                    userAnswer = JOptionPane.showInputDialog("If you withdraw " + transactionAmount + "$, you will go over your budget. " +
+                            "Do you really want to exceed the previously set budget (Y/N): ");
+                    if (userAnswer == null) { //case where the user close the window and doesn't answer
+                        JOptionPane.showMessageDialog(null,
+                                "Transaction cancelled. No input provided.",
+                                "Information",
+                                JOptionPane.INFORMATION_MESSAGE);
+                        return; // Annuler la transaction si l'utilisateur annule ou ne fournit pas de réponse
+                    }
+
+
+
+                    //loop to check valid input
+                    while(!(userAnswer.equalsIgnoreCase("Y") || userAnswer.equalsIgnoreCase("N"))){
+                        userAnswer = JOptionPane.showInputDialog("Please enter a valid input, Y or N: ");
+                        if (userAnswer == null) {
+                            JOptionPane.showMessageDialog(null,
+                                    "Transaction cancelled. No input provided.",
+                                    "Information",
+                                    JOptionPane.INFORMATION_MESSAGE);
+                            return; // Annuler la transaction si l'utilisateur annule encore
+                        }
+                    }
+                    // If N, cancel transaction
+                    if (userAnswer.equalsIgnoreCase("N")) {
+                        JOptionPane.showMessageDialog(null,
+                                "Transaction cancelled. You chose not to exceed your budget.",
+                                "Information",
+                                JOptionPane.INFORMATION_MESSAGE); // Show information message
+
+                        return; // Cancel the transaction
+                    }
+                    //continue
+
+                }
+
+            } catch(SQLException ex){
+                errorMessage(ex.getMessage());
+            }
+
+
+            //check limit
+            try{
+                if (Objects.equals(type, "Withdraw") && transactionAmount > db.getMoney() + db.getMoneyLimit()){ // check if the user want to withdraw more money than ha actually has
+                    errorMessage("You can't withdraw " + transactionAmount + "$ ! You will be overdrawn by " + String.format("%.2f", db.getMoney() - transactionAmount) + "$ !");
                     return;
                 }
             } catch (SQLException ex) {
@@ -519,6 +502,13 @@ public class Menu {
                 moneyAfter = moneyBefore - transactionAmount; // calculate the money after if the user make withdrawing
                 try {
                     db.addMoney(-transactionAmount); // add money corresponding to the negative of the value of money
+
+                    if(userAnswer.equalsIgnoreCase("Y")){ //it means that the transaction amount go aver the limit so we reset the budget to its iniatial value
+                        db.setMoneyBudget(2000);
+                        JOptionPane.showMessageDialog(null, "Your budget planner has been reset to 2000$.", "Information", JOptionPane.INFORMATION_MESSAGE);
+                    }else {
+                        db.setMoneyBudget(db.getMoneyBudget()-transactionAmount);
+                    }
                 } catch (SQLException ex) {
                     throw new RuntimeException(ex);
                 }
@@ -537,19 +527,27 @@ public class Menu {
             }
 
             if (type == "Deposit"){ // display message accordingly
-                errorMessage("Successfully deposit " + transactionAmount + "$ ! You have now " + String.format("%.2f", moneyAfter) + "$ !");
+                infoMessage("Successfully deposit " + transactionAmount + "$ ! You have now " + String.format("%.2f", moneyAfter) + "$ !");
             }
 
             if (type == "Withdraw"){
-                errorMessage("Successful withdraw " + transactionAmount + "$ ! You have now " + String.format("%.2f", moneyAfter) + "$ !");
+                try {
+                    if(userAnswer.equalsIgnoreCase("Y")){
+                        infoMessage("Successful withdraw " + transactionAmount + "$ ! You have now " + String.format("%.2f", moneyAfter) + "$ !");
+                    }else {
+                        infoMessage("Successful withdraw " + transactionAmount + "$ ! You have now " + String.format("%.2f", moneyAfter) +
+                                "$ and you have now " + db.getMoneyBudget() + "$ still available on your budget !");
+                    }
+                }catch(SQLException ex){
+                    ex.printStackTrace();
+                }
             }
 
-            // reset to text areas, ready to proceed another withdrax/deposit
+            // reset to text areas, ready to proceed another withdraw/deposit
             amountMoneyArea.setText("");
             transactionNotesArea.setText("");
 
         });
-
         return actionsWindow;
     }
 
@@ -560,7 +558,7 @@ public class Menu {
         // implementing buttons using the same logic as before
         JButton buttonReturn = new JButton("Return to Tools");
         buttonReturn.setFont(new Font(writingPolice, Font.BOLD, 30));
-        buttonReturn.setBackground(Color.RED);
+        buttonReturn.setBackground(colorBrown);
 
         JPanel panelButtons = new JPanel(new GridLayout(1, 1, 10, 0));
         panelButtons.add(buttonReturn);
@@ -594,10 +592,10 @@ public class Menu {
                     JLabel label = new JLabel(data);
                     label.setHorizontalAlignment(SwingConstants.CENTER); // align cells
                     rowPanel.add(label);
-                    label.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+                    label.setBorder(BorderFactory.createLineBorder(beigeParchemin));
                 }
-                rowPanel.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY)); // interline border
-                historyPanel.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY)); // outline (exterior) border
+                rowPanel.setBorder(BorderFactory.createLineBorder(beigeParchemin)); // interline border
+                historyPanel.setBorder(BorderFactory.createLineBorder(beigeParchemin)); // outline (exterior) border
                 historyPanel.add(rowPanel);
             }
         } catch (SQLException ex) {
@@ -639,16 +637,95 @@ public class Menu {
                 JLabel label = new JLabel(data);
                 label.setHorizontalAlignment(SwingConstants.CENTER); // align cells
                 rowPanel.add(label);
-                label.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+                label.setBorder(BorderFactory.createLineBorder(beigeParchemin));
             }
-            rowPanel.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY)); // interline border
-            historyPanel.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY)); // outline (exterior) border
+            rowPanel.setBorder(BorderFactory.createLineBorder(beigeParchemin)); // interline border
+            historyPanel.setBorder(BorderFactory.createLineBorder(beigeParchemin)); // outline (exterior) border
             historyPanel.add(rowPanel);
         }
 
         panel.revalidate();
         panel.repaint();
     }
+
+    public JPanel budgetWindow() throws SQLException {
+        JPanel budgetWindow = new JPanel(new GridLayout(3, 2, 10, 10)); // 2 rows, 2 columns with gaps
+        budgetWindow.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20)); // Add padding to the panel
+
+        // Create 2 labels with corresponding text areas
+        // LABELS
+        JLabel limitArea = new JLabel("Set new limit", JLabel.CENTER); // Center the label text
+        limitArea.setFont(new Font(writingPolice, Font.BOLD, 30));
+        limitArea.setVerticalAlignment(JLabel.CENTER); // Align vertically to center with the text fields
+
+        JLabel limitAreaDisplay = new JLabel("Current limit", JLabel.CENTER); // Center the label text
+        limitAreaDisplay.setFont(new Font(writingPolice, Font.BOLD, 30));
+        limitAreaDisplay.setVerticalAlignment(JLabel.CENTER); // Align vertically to center with the text fields
+
+        // Text AREAS
+        JTextField newBudget = new JTextField();
+        newBudget.setFont(new Font(writingPolice, Font.BOLD, 30));
+        currentBudget = new JTextField();
+        currentBudget.setFont(new Font(writingPolice, Font.BOLD, 30)); //show the current limit
+        newBudget.setBorder(BorderFactory.createLineBorder(Color.black, 5, true));
+        currentBudget.setBorder(BorderFactory.createLineBorder(Color.black, 5, true));
+
+
+        currentBudget.setText(String.format("%.2f", db.getMoneyBudget())); // Call getMoneyBudget() to get the correct value
+
+        currentBudget.setEditable(false);
+        // Buttons
+        JButton buttonSetBudget = new JButton("Set Limit");
+        buttonSetBudget.setFont(new Font(writingPolice, Font.BOLD, 30));
+        buttonSetBudget.setBackground(beigeParchemin);
+
+
+        JButton buttonReturn = new JButton("Return to tools");
+        buttonReturn.setFont(new Font(writingPolice, Font.BOLD, 30));
+        buttonReturn.setBackground(colorBrown);
+
+
+        // Add labels, text fields, and buttons to the panel
+        budgetWindow.add(limitArea);
+        budgetWindow.add(limitAreaDisplay);
+        budgetWindow.add(newBudget);
+        budgetWindow.add(currentBudget);
+        budgetWindow.add(buttonSetBudget);
+        budgetWindow.add(buttonReturn);
+
+        buttonSetBudget.addActionListener(e -> {
+            if (newBudget.getText().isEmpty()){
+                errorMessage("You must specify the new budget !");
+                return;
+            }
+
+            if ( !!! newBudget.getText().matches("^[0-9]+([,.][0-9])?([0-9])?$")){ // allowing only number with 2 decimal maximum after the comma or the dot
+                errorMessage("Put a valid budget amount !");
+                return;
+            }
+
+            try {
+                String amountString = newBudget.getText().replace(",", "."); // replace comma with dot if needed
+                double amountDouble = Double.parseDouble(amountString); // convert to double
+
+                db.setMoneyBudget(amountDouble); // set money budget into db
+                currentBudget.setText(String.format("%.2f", amountDouble)); // display the new budget in the second text area
+                infoMessage("Succesfully set the new budget at " + amountString + "$ !");
+                newBudget.setText("");
+
+            } catch (SQLException ex) {
+                throw new RuntimeException(ex);
+            }
+        });
+
+        buttonReturn.addActionListener(e -> {
+
+            cardLayout.show(panel, "ToolWindow");
+        });
+
+        return budgetWindow;
+    }
+
 
     public JPanel limitWindow() throws SQLException {
         JPanel limitWindow = new JPanel(null);
@@ -687,11 +764,11 @@ public class Menu {
         // implementing two buttons, using the same logic as before
         JButton buttonSetLimit = new JButton("Set Limit");
         buttonSetLimit.setFont(new Font(writingPolice, Font.BOLD, 30));
-        buttonSetLimit.setBackground(Color.GREEN);
+        buttonSetLimit.setBackground(beigeParchemin);
 
         JButton buttonReturn = new JButton("Return to tools");
         buttonReturn.setFont(new Font(writingPolice, Font.BOLD, 30));
-        buttonReturn.setBackground(Color.RED);
+        buttonReturn.setBackground(colorBrown);
 
         buttonReturn.setBounds(400, 250, 250, 50);
         buttonSetLimit.setBounds(50, 250, 250, 50);
@@ -714,8 +791,10 @@ public class Menu {
                 String amountString = textArea.getText().replace(",", "."); // replace comma with dot if needed
                 double amountDouble = Double.parseDouble(amountString); // convert to double
 
-                db.setMoneyLimit(amountDouble); // set money limit
+                db.setMoneyLimit(amountDouble); // set money limit into db
                 textArea2.setText(String.format("%.2f", amountDouble)); // display the new limit in the second text area
+                infoMessage("Succesfully set the new limit at " + amountString + "$ !");
+                textArea.setText("");
 
             } catch (SQLException ex) {
                 throw new RuntimeException(ex);
@@ -735,13 +814,24 @@ public class Menu {
         userMoneyDouble = db.getMoney();
         userMoney = String.format("%.2f", userMoneyDouble);
         moneyButton.setText(userMoney + "$");
+        if (db.getMoney() <= 0){
+            moneyButton.setBorder(BorderFactory.createLineBorder(Color.RED, 5, true));
+        }
+        else{
+            moneyButton.setBorder(BorderFactory.createLineBorder(Color.BLACK, 1, true));
+        }
+
         panel.revalidate();
         panel.repaint();
         this.actualMoney = db.getMoney(); // update the money
     }
 
     public void errorMessage(String message){
-        JOptionPane.showMessageDialog(panel, "WARNING : " + message); // format all error message so we onyl have to call this function when we want to display an error message
+        JOptionPane.showMessageDialog(panel, "🚨 WARNING : " + message); // format all error message so we onyl have to call this function when we want to display an error message
+    }
+
+    public void infoMessage(String message){
+        JOptionPane.showMessageDialog(panel, "INFO : " + message);
     }
 
 
